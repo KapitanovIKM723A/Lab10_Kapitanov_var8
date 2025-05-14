@@ -1,0 +1,6 @@
+@Lab10_Kapitanov_var8_HostAddress = http://localhost:5078
+
+GET {{Lab10_Kapitanov_var8_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
