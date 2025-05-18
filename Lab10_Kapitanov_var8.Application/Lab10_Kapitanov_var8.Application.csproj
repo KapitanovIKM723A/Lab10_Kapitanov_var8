@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Lab10_Kapitanov_var8.Domain\Lab10_Kapitanov_var8.Domain.csproj" />
+    <ProjectReference Include="..\Lab10_Kapitanov_var8.Infrastructure\Lab10_Kapitanov_var8.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

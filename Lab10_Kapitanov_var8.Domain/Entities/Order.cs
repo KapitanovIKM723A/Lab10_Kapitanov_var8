@@ -1,5 +1,4 @@
-﻿// Order.cs
-namespace Lab10_Kapitanov_var8.Domain.Entities
+﻿namespace Lab10_Kapitanov_var8.Domain.Entities
 {
     public class Order
     {
