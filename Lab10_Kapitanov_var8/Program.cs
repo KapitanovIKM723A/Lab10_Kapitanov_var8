@@ -1,37 +1,63 @@
 using Lab10_Kapitanov_var8.Infrastructure;
-using Lab10_Kapitanov_var8.Infrastructure.Repositories;
-using Lab10_Kapitanov_var8.Infrastructure.ExternalApis;
-using Lab10_Kapitanov_var8.Domain.Interfaces;
-using Lab10_Kapitanov_var8.Application.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+bool useInMemory = builder.Configuration.GetValue<bool>("UseInMemory");
+if (useInMemory)
+{
+    builder.Services.AddDbContext<AppDbContext>(opt =>
+        opt.UseInMemoryDatabase("Lab10_InMemory"));
+}
+else
+{
+    builder.Services.AddDbContext<AppDbContext>(opt =>
+        opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
 
-builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(opts =>
+    {
+        opts.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        opts.JsonSerializerOptions.WriteIndented = true;
+    });
 
-builder.Services.AddScoped<IMedicineService, MedicineService>();
-builder.Services.AddScoped<IOrderService, OrderService>();
-
-builder.Services.AddHttpClient<DrugInfoRepository>();
-builder.Services.AddScoped<DrugInfoService>();
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Lab10_Kapitanov_var8 API",
+        Version = "v1",
+        Description = "Multi-layer ASP.NET Core API"
+    });
+});
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Lab10 Kapitanov API V1");
+});
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
 
-app.MapControllers();
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    if (useInMemory)
+        db.Database.EnsureCreated();
+    else
+        db.Database.Migrate();
 
+    DbSeeder.Seed(db);
+}
+
+app.MapControllers();
 app.Run();

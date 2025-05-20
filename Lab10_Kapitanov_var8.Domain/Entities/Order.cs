@@ -1,4 +1,7 @@
-﻿namespace Lab10_Kapitanov_var8.Domain.Entities
+﻿using System;
+using System.Collections.Generic;
+
+namespace Lab10_Kapitanov_var8.Domain.Entities
 {
     public class Order
     {
